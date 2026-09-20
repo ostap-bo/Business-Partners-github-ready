@@ -67,6 +67,59 @@
   }
 
   // ------------------------------------------------------------------
+  // Consultation modal ("Зв'язатися з нами" popup) — every such button
+  // across the site opens this single, shared modal instead of navigating.
+  // ------------------------------------------------------------------
+  function initConsultModal() {
+    var modal = qs("#consult-modal");
+    if (!modal) return;
+    var closeBtn = qs("#consult-modal-close", modal);
+    var openers = qsa(".js-open-consult-modal");
+    var lastFocused = null;
+
+    function open() {
+      lastFocused = document.activeElement;
+      modal.hidden = false;
+      document.body.classList.add("modal-open");
+      if (closeBtn) closeBtn.focus();
+    }
+    function close() {
+      modal.hidden = true;
+      document.body.classList.remove("modal-open");
+      if (lastFocused && lastFocused.focus) lastFocused.focus();
+    }
+
+    openers.forEach(function (btn) {
+      btn.addEventListener("click", open);
+    });
+    if (closeBtn) closeBtn.addEventListener("click", close);
+    modal.addEventListener("click", function (e) {
+      if (e.target === modal) close();
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && !modal.hidden) close();
+    });
+  }
+
+  // ------------------------------------------------------------------
+  // Team slider (Про компанію) — simple scroll-snap track + arrow buttons
+  // ------------------------------------------------------------------
+  function initTeamSlider() {
+    qsa(".team-slider").forEach(function (slider) {
+      var track = qs(".team-slider-track", slider);
+      var prev = qs(".slider-prev", slider);
+      var next = qs(".slider-next", slider);
+      if (!track) return;
+      function step() {
+        var card = qs(".team-card", track);
+        return card ? card.getBoundingClientRect().width + 18 : 280;
+      }
+      if (prev) prev.addEventListener("click", function () { track.scrollBy({ left: -step(), behavior: "smooth" }); });
+      if (next) next.addEventListener("click", function () { track.scrollBy({ left: step(), behavior: "smooth" }); });
+    });
+  }
+
+  // ------------------------------------------------------------------
   // Accordion (supports multiple independent groups via data-group)
   // ------------------------------------------------------------------
   function initAccordion(root) {
@@ -174,6 +227,8 @@
   document.addEventListener("DOMContentLoaded", function () {
     initMobileNav();
     initLangSwitch();
+    initConsultModal();
+    initTeamSlider();
     initAccordion();
     initForms();
     initServicePage();
